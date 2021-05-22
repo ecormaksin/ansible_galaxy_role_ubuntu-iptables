@@ -1,22 +1,16 @@
 ---
 # tasks file for ansible_galaxy_role_ubuntu-iptables
 
-- name: "Set iptables | allow http"
+- name: "Change iptables | allow http, https"
   become: yes
   ignore_errors: "{{ ansible_check_mode }}"
-  iptables:
-    chain: INPUT
-    protocol: tcp
-    destination_port: "80"
-    ctstate: NEW
-    jump: ACCEPT
-
-- name: "Set iptables | allow https"
-  become: yes
-  ignore_errors: "{{ ansible_check_mode }}"
-  iptables:
-    chain: INPUT
-    protocol: tcp
-    destination_port: "443"
-    ctstate: NEW
-    jump: ACCEPT
+  shell:
+    cmd: |
+      iptables -L | grep "ACCEPT     tcp  --  anywhere             anywhere             state NEW tcp dpt:https" >/dev/null
+      if [ $? -eq 0 ]; then
+        echo "already changed."
+      else
+        iptables -I INPUT 6 -p tcp -m tcp --dport https -j ACCEPT
+        iptables -I INPUT 6 -p tcp -m tcp --dport http -j ACCEPT
+        iptables-save
+      fi
