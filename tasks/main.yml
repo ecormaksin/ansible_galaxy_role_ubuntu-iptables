@@ -1,11 +1,11 @@
 ---
 # tasks file for ansible_galaxy_role_ubuntu-iptables
 
-- name: "Change iptables | cat iptables"
+- name: "Change iptables | list iptables"
   become: yes
   ignore_errors: "{{ ansible_check_mode }}"
-  command: cat iptables -L
-  register: cat_iptables_result
+  command: iptables -L
+  register: iptables_result
 
 - name: "Change iptables | allow http, https"
   become: yes
@@ -15,4 +15,4 @@
       iptables -I INPUT 6 -p tcp -m tcp --dport https -j ACCEPT
       iptables -I INPUT 6 -p tcp -m tcp --dport http -j ACCEPT
       iptables-save
-  when: cat_iptables_result.stdout.find('tcp dpt:https') == -1
+  when: iptables_result.stdout.find('tcp dpt:https') == -1
